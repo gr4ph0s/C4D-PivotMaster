@@ -360,9 +360,7 @@ class MyDialog(c4d.gui.GeDialog):
 
     def Command(self, id, msg):
         if id==1000:
-            self.ua.xValue = 100
-            self.ua.yValue = 100
-            self.ua.Redraw()
+            gui.MessageDialog('Thanks you for testing it ! :D')
 
         elif id==1001:
             self.Close()
@@ -379,7 +377,7 @@ class LunchUI(c4d.plugins.CommandData):
     ICON        = None
 
     def Init(self, op) :
-        print op
+        print'test'
         return True
 
     def Execute(self, doc):

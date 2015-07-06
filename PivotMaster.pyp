@@ -1,10 +1,19 @@
 import  c4d,os
-from c4d import gui, plugins, Vector, Matrix
+from c4d import gui, plugins, Vector, Matrix, bitmaps
 
+MODULE_ID                   =   10000091
+
+PIVOT_MASTER_PLUGIN_NAME    =   1000
+PIVOT_MASTER_ABOUT          =   1001
+PIVOT_MASTER_ALERT_OBJ      =   1002
+PIVOT_MASTER_ALERT_NULL     =   1003
+PIVOT_MASTER_ALERT_MULTI    =   1004
 
 class mesh():
-    def __init__(self,doc):
-        self._MESH                = doc.GetActiveObject()
+    
+    def __init__(self,obj):
+        self._MESH                = obj
+
     
     
         self._RADIUS              = self._MESH.GetRad()
@@ -25,9 +34,8 @@ class mesh():
 
 class pivotTool(mesh):
 
-    def __init__(self,doc):
-        mesh.__init__(self,doc)
-
+    def __init__(self,obj):
+        mesh.__init__(self,obj)
         self._Matrix = self.newMatrix()
        
         
@@ -65,6 +73,7 @@ class pivotTool(mesh):
         
     
     def updateAxis(self, where):
+        
         vbuffer   = Vector(0, 0, 0)
         nbpts     = self._MESH.GetPointCount()
         points    = self._MESH.GetAllPoints()
@@ -203,6 +212,7 @@ class pivotTool(mesh):
         elif where == self.__BACK_BOT_RIGHT :
             vbuffer = Vector (self._RADIUS.x, -self._RADIUS.y , self._RADIUS.z)
             self._Matrix.off += vbuffer 
+         
       
         newMatrix = ~self._Matrix * self._CURRENT_AXIS
         for i in range(nbpts) :
@@ -214,20 +224,23 @@ class pivotTool(mesh):
 
 
 
-class MyUA(c4d.gui.GeUserArea):
 
-    xValue = 0          
-    yValue = 0
+class pictureManagment(c4d.gui.GeUserArea):
 
     def __init__(self,doc):
-        
+        self.doc        = doc
+        self.obj        = None
+
+        self._DOING     = False
+        self.__hover    = False
+        self._COUNT     = 0
+  
         dir, file = os.path.split(__file__)
-        path = os.path.join(dir, "res")      
-        image = path + "\image1.jpg"
+        self.path = os.path.join(dir, "res")
 
-        self.document = doc
-        self.__hover = False
-
+        self.bmp = c4d.bitmaps.BaseBitmap()
+        self.bmp.InitWith(self.path + "\PivotMaster.jpg")  
+        
         self.position = ([  [8   ,32  ,28  ,48  ,1],
                             [61  ,43  ,78  ,58  ,2],
                             [116 ,52  ,132 ,68  ,3],
@@ -259,61 +272,60 @@ class MyUA(c4d.gui.GeUserArea):
                             [184 ,142 ,202 ,159 ,27]
                             ])
 
-        self.bmp = c4d.bitmaps.BaseBitmap()   #Create an instance of the BaseBitmap class
-        self.bmp.InitWith(image)              #Initialize it with the image
-
-        self.xValue = 5
-        self.yValue = 5
-
     def DrawMsg(self, x1, y1, x2, y2, msg):
+        self.DrawSetPen(c4d.COLOR_BG)
+        self.DrawRectangle(0, 0, 208, 200)
+        self.SetClippingRegion(0, 0, 208, 200)
+        self.DrawBitmap(self.bmp, 5, 5, 200, 190, 0, 0, 200, 190, c4d.BMP_NORMAL | c4d.BMP_ALLOWALPHA)
 
-        self.DrawSetPen(c4d.COLOR_BG)         #COLOR_BG is the image we load with DrawBitmap
-        self.DrawRectangle(x1, y1, x2, y2)    #Draws a rectangle and fills it with the image bitmap
-        self.SetClippingRegion(x1, y1, x2, y2)
-        w, h = self.bmp.GetSize()
-        self.DrawBitmap(self.bmp, x1 + self.xValue, y1 + self.yValue, w, h, 0, 0, w, h, c4d.BMP_NORMAL | c4d.BMP_ALLOWALPHA)
-
-
-
-        self.DrawBorder(c4d.BORDER_ROUND, x1+5, y1+5, x2-5, y2-5)
+        self.DrawBorder(c4d.BORDER_ROUND, 5, 5, 203, 195)
 
 
     def Message(self, msg, result): 
         if msg.GetId() == c4d.BFM_GETCURSORINFO: 
-            if not self.__hover: 
-                print "over" 
+            if not self.__hover: #hover the total image
                 self.__hover = True 
                 self.Redraw() 
                 self.SetTimer(100) 
-        return super(MyUA, self).Message(msg, result) 
+        return super(pictureManagment, self).Message(msg, result) 
 
     def Timer(self, msg):
+        if self._COUNT == 10:
+            self._DOING = True
+            self._COUNT = 0
+
+        self._COUNT += 1
         base = self.Local2Global() 
         bc = c4d.BaseContainer() 
-        res = self.GetInputState(c4d.BFM_INPUT_MOUSE, c4d.BFM_INPUT_MOUSELEFT, bc) 
+        res = self.GetInputState(c4d.BFM_INPUT_MOUSE, c4d.BFM_INPUT_MOUSELEFT, bc)
+
         x = bc.GetLong(c4d.BFM_INPUT_X) - base['x'] 
         y = bc.GetLong(c4d.BFM_INPUT_Y) - base['y'] 
-        if x > self.GetWidth() or x < 0 or y > self.GetHeight() or y < 0: 
-            print "out" 
+        if x > self.GetWidth() or x < 0 or y > self.GetHeight() or y < 0:
             self.__hover = False 
             self.SetTimer(0) 
             self.Redraw() 
 
     def getButton(self,x,y):
-        for i in self.position:
-            if x > i[0] and x < i[2] and y > i[1] and y < i[3]:
-                print i[4]
-                self.document.StartUndo()
-                self.document.AddUndo(c4d.UNDOTYPE_CHANGE, op)
+        if self._DOING == True:
+            for i in self.position:
+                if x > i[0] and x < i[2] and y > i[1] and y < i[3]:
+                    self.obj = self.doc.GetActiveObject()
+                    if self.obj != None:
+                        self._DOING = False
+                        self.doc.StartUndo()
+                        self.doc.AddUndo(c4d.UNDOTYPE_CHANGE, self.obj)
 
-                blaaa = pivotTool(self.document)
-                blaaa.updateAxis(i[4])
+                        blaaa = pivotTool(self.obj)
+                        blaaa.updateAxis(i[4])
 
-                op.Message(c4d.MSG_UPDATE)
-                doc.EndUndo()
-                c4d.EventAdd()
+                        self.obj.Message(c4d.MSG_UPDATE)
+                        self.doc.EndUndo()
+                        c4d.EventAdd()
+                    else :
+                        print "test"
+                        gui.MessageDialog('Vous devez avoir un object de selectionné')
         
-
     def InputEvent(self, msg):
 
         action = c4d.BaseContainer(c4d.BFM_ACTION)
@@ -340,69 +352,37 @@ class MyUA(c4d.gui.GeUserArea):
 
         return True
 
-class MyDialog(c4d.gui.GeDialog):
-    def setData(self,document):
-        self.doc = document
-        self.ua = MyUA(self.doc) 
-
+class myUI(c4d.gui.GeDialog):
+    def __init__(self,doc) :        
+        self.doc = doc
+        self.pictureManagment = pictureManagment(self.doc)  
 
     def CreateLayout(self):
         self.AddUserArea(2000, c4d.BFH_SCALEFIT | c4d.BFV_SCALEFIT) 
-        self.AttachUserArea(self.ua, 2000)
-        self.AddButton(1000, c4d.BFH_CENTER, 80, 15, "Click Me")
-        self.AddButton(1001, c4d.BFH_CENTER, 80, 15, "Close")
-        return True
-
-    def InitValues(self):
-        doc = None
-        ua = None
-        return True
-
-    def Command(self, id, msg):
-        if id==1000:
-            gui.MessageDialog('Thanks you for testing it ! :D')
-
-        elif id==1001:
-            self.Close()
+        self.AttachUserArea(self.pictureManagment, 2000)
+        self.AddStaticText(1101, c4d.BFH_CENTER, 0, 0, txt(PIVOT_MASTER_ABOUT))
         return True
 
 
 
-class LunchUI(c4d.plugins.CommandData):
-    PLUGIN_ID   = 10000090 # TEST ID
-    op          = None
-    dlg         = None
-    ua          = None
-    document    = None
-    ICON        = None
-
-    def Init(self, op) :
-        print'test'
-        return True
-
+class lunchUI(c4d.plugins.CommandData):
+    dialog = None
+    
     def Execute(self, doc):
-        if not self.dlg: self.dlg = MyDialog()
-        self.dlg.setData(doc)
-        self.dlg.Open(c4d.DLG_TYPE_ASYNC, self.PLUGIN_ID, -1, -1, 220, 310)
-        return True
+        if self.dialog is None:
+           self.dialog = myUI(doc)
+        return self.dialog.Open(dlgtype=c4d.DLG_TYPE_ASYNC, pluginid=MODULE_ID, defaulth=310, defaultw=220)
 
-    def RestoreLayout(self, subid):
-        if not self.dlg:
-            self.dlg  = MyDialog()
-        return self.dlg.Restore(self.PLUGIN_ID, subid)
-
-
-    @classmethod
-    def Register(PivotMaster):
-        data = {
-            "id":     PivotMaster.PLUGIN_ID,
-            "icon":   PivotMaster.ICON,
-            "str":    "PivotMaster",
-            "help":   "Click on the circle",
-            "info":   c4d.PLUGINFLAG_COMMAND_HOTKEY,
-            "dat":    PivotMaster(),
-        }
-        c4d.plugins.RegisterCommandPlugin(**data)
+    def RestoreLayout(self, sec_ref):
+        if self.dialog is None:
+           self.dialog = myUI(doc)
+        return self.dialog.Restore(pluginid=MODULE_ID, secret=sec_ref)
 
 if __name__ == "__main__":
-    LunchUI.Register()
+     bmp = bitmaps.BaseBitmap()
+     dir, f = os.path.split(__file__)
+     fn = os.path.join(dir, "res", "PivotMaster.tif")
+     bmp.InitWith(fn)
+     c4d.plugins.RegisterCommandPlugin(id=MODULE_ID, str=c4d.plugins.GeLoadString(PIVOT_MASTER_PLUGIN_NAME),
+                                      help="Click on the circle",info=0,
+                                        dat=lunchUI(), icon=bmp)

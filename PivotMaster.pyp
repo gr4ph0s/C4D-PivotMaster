@@ -1,3 +1,21 @@
+#   ENGLISH VERSION :
+# ----------------------------------------------------------------------------
+# "THE BEER-WARE LICENSE" (Revision 42):
+# Adam Maxime Aka Gr4ph0s wrote this file. As long as you retain this notice you
+# can do whatever you want with this stuff. If we meet some day, and you think
+# this stuff is worth it, you can buy me a beer in return Poul-Henning Kamp
+# ----------------------------------------------------------------------------
+#
+#   FRENCH VERSION :
+# ----------------------------------------------------------------------------
+# "LICENCE BEERWARE" (Révision 42):
+# Adam Maxime Aka Gr4ph0s a créé ce fichier. Tant que vous conservez cet avertissement,
+# vous pouvez faire ce que vous voulez de ce truc. Si on se rencontre un jour et
+# que vous pensez que ce truc vaut le coup, vous pouvez me payer une bière en
+# retour. Poul-Henning Kamp
+# ----------------------------------------------------------------------------
+#
+
 import  c4d,os,types
 from c4d import gui, plugins, Vector, Matrix, bitmaps
 

@@ -1,7 +1,7 @@
-import  c4d,os
+import  c4d,os,types
 from c4d import gui, plugins, Vector, Matrix, bitmaps
 
-MODULE_ID                   =   10000091
+MODULE_ID                   =   1035532
 
 PIVOT_MASTER_PLUGIN_NAME    =   1000
 PIVOT_MASTER_ABOUT          =   1001
@@ -13,20 +13,12 @@ class mesh():
     
     def __init__(self,obj):
         self._MESH                = obj
-
-    
     
         self._RADIUS              = self._MESH.GetRad()
         self._ALL_POINTS          = self._MESH.GetAllPoints()
         self._NOMBRE_POINT        = self._MESH.GetPointCount()
         self._CURRENT_AXIS        = self._MESH.GetMg()
         self._BOUDING_BOX_CENTER  = self._MESH.GetMp() + self._MESH.GetAbsPos()
-
-    def getCenterObj(self):
-        self._BOUDING_BOX_CENTER = self._MESH.GetMp() + self._MESH.GetAbsPos()  
-    
-    def getCurrentAxis(self):
-        self._CURRENT_AXIS = self._MESH.GetMg()
         
     def newMatrix(self):
         return Matrix(self._BOUDING_BOX_CENTER, Vector(1, 0, 0), Vector(0, 1, 0), Vector(0, 0, 1))
@@ -77,7 +69,7 @@ class pivotTool(mesh):
         vbuffer   = Vector(0, 0, 0)
         nbpts     = self._MESH.GetPointCount()
         points    = self._MESH.GetAllPoints()
-   
+
         #FRONT_TOP_LEFT
         if where == self.__FRONT_TOP_LEFT :
             vbuffer = Vector (-self._RADIUS.x, self._RADIUS.y , -self._RADIUS.z)
@@ -213,7 +205,7 @@ class pivotTool(mesh):
             vbuffer = Vector (self._RADIUS.x, -self._RADIUS.y , self._RADIUS.z)
             self._Matrix.off += vbuffer 
          
-      
+        
         newMatrix = ~self._Matrix * self._CURRENT_AXIS
         for i in range(nbpts) :
             points[i] = newMatrix.Mul(points[i])             
@@ -310,21 +302,31 @@ class pictureManagment(c4d.gui.GeUserArea):
         if self._DOING == True:
             for i in self.position:
                 if x > i[0] and x < i[2] and y > i[1] and y < i[3]:
-                    self.obj = self.doc.GetActiveObject()
-                    if self.obj != None:
-                        self._DOING = False
-                        self.doc.StartUndo()
-                        self.doc.AddUndo(c4d.UNDOTYPE_CHANGE, self.obj)
-
-                        blaaa = pivotTool(self.obj)
-                        blaaa.updateAxis(i[4])
-
-                        self.obj.Message(c4d.MSG_UPDATE)
-                        self.doc.EndUndo()
-                        c4d.EventAdd()
+                    self._DOING = False
+                    self.obj = self.doc.GetActiveObjects(0)
+                    #We check if we got much more one item select
+                    if len(self.obj) >= 2 :
+                        gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_MULTI))
                     else :
-                        print "test"
-                        gui.MessageDialog('Vous devez avoir un object de selectionné')
+                        self.obj = self.obj[0]
+                        #We check if we got a slection
+                        if self.obj == None:
+                            gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_OBJ))
+                        else :
+                            #We check if is not a null
+                            if self.obj.GetTypeName() != "Polygon":
+                                gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_NULL))
+                            else :
+                                    self.doc.StartUndo()
+                                    self.doc.AddUndo(c4d.UNDOTYPE_CHANGE, self.obj)
+
+                                    objet = pivotTool(self.obj)
+                                    objet.updateAxis(i[4])
+
+                                    self.obj.Message(c4d.MSG_UPDATE)
+                                    self.doc.EndUndo()
+                                    c4d.EventAdd()
+                            
         
     def InputEvent(self, msg):
 
@@ -360,9 +362,8 @@ class myUI(c4d.gui.GeDialog):
     def CreateLayout(self):
         self.AddUserArea(2000, c4d.BFH_SCALEFIT | c4d.BFV_SCALEFIT) 
         self.AttachUserArea(self.pictureManagment, 2000)
-        self.AddStaticText(1101, c4d.BFH_CENTER, 0, 0, txt(PIVOT_MASTER_ABOUT))
+        self.AddStaticText(1101, c4d.BFH_CENTER, 0, 20, c4d.plugins.GeLoadString(PIVOT_MASTER_ABOUT))
         return True
-
 
 
 class lunchUI(c4d.plugins.CommandData):
@@ -371,7 +372,7 @@ class lunchUI(c4d.plugins.CommandData):
     def Execute(self, doc):
         if self.dialog is None:
            self.dialog = myUI(doc)
-        return self.dialog.Open(dlgtype=c4d.DLG_TYPE_ASYNC, pluginid=MODULE_ID, defaulth=310, defaultw=220)
+        return self.dialog.Open(dlgtype=c4d.DLG_TYPE_ASYNC, pluginid=MODULE_ID, defaulth=280, defaultw=220)
 
     def RestoreLayout(self, sec_ref):
         if self.dialog is None:

@@ -5,6 +5,12 @@
 # can do whatever you want with this stuff. If we meet some day, and you think
 # this stuff is worth it, you can buy me a beer in return Poul-Henning Kamp
 # ----------------------------------------------------------------------------
+# BIG THANKS TO :
+#       - César Vonc    for all is open source python plugin for c4d    => http://cesar.vonc.fr
+#       - xs_yann       for his help                                    => http://www.xsyann.com
+#       - valkaari      for his help                                    => http://www.valkaari.com
+#       - Mipoll        for the main idea                               => http://mipollstudio.blogspot.fr
+#       - Aurety        for nothing but I like to thanks him !          => http://www.lev-communication.fr
 #
 #   FRENCH VERSION :
 # ----------------------------------------------------------------------------
@@ -14,7 +20,12 @@
 # que vous pensez que ce truc vaut le coup, vous pouvez me payer une bière en
 # retour. Poul-Henning Kamp
 # ----------------------------------------------------------------------------
-#
+# Un grand merci à :
+#       - César Vonc    pour son aide et tout ces plugins c4d open source   => http://cesar.vonc.fr
+#       - xs_yann       pour son aide                                       => http://www.xsyann.com
+#       - valkaari      pour son aide                                       => http://www.valkaari.com
+#       - Mipoll        pour l'idée principale                              => http://mipollstudio.blogspot.fr
+#       - Aurety        pour rien mais j'aime le remercier !                => http://www.lev-communication.fr
 
 import  c4d,os,types
 from c4d import gui, plugins, Vector, Matrix, bitmaps

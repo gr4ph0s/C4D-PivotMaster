@@ -300,7 +300,7 @@ class pictureManagment(c4d.gui.GeUserArea):
         return super(pictureManagment, self).Message(msg, result) 
 
     def Timer(self, msg):
-        if self._COUNT == 10:
+        if self._COUNT == 5:
             self._DOING = True
             self._COUNT = 0
 

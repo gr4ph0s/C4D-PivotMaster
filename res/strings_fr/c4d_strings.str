@@ -3,7 +3,7 @@ STRINGTABLE
 	PIVOT_MASTER_PLUGIN_NAME "Pivot Master";
 
 	PIVOT_MASTER_ABOUT			"v1 - Gr4ph0s - http://gr4ph0s.free.fr";
-	PIVOT_MASTER_ALERT_OBJ		"Vous devez sélectionner un objet";
-	PIVOT_MASTER_ALERT_NULL		"Impossible de sélectionner un objet nul";
-	PIVOT_MASTER_ALERT_MULTI	"Impossible de sélectionner plusieurs objets";
+	PIVOT_MASTER_ALERT_OBJ      "Vous devez s\u00e9lectionner un objet";
+	PIVOT_MASTER_ALERT_NULL		"Impossible de s\u00e9lectionner un objet nul";
+	PIVOT_MASTER_ALERT_MULTI	"Impossible de s\u00e9lectionner plusieurs objets";
 }

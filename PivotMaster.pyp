@@ -7,6 +7,7 @@
 # ----------------------------------------------------------------------------
 # BIG THANKS TO :
 #       - César Vonc    for all is open source python plugin for c4d    => http://cesar.vonc.fr
+#       - oli_d         for his help                                    => http://frenchcinema4d.fr/member.php?55058-oli_d
 #       - xs_yann       for his help                                    => http://www.xsyann.com
 #       - valkaari      for his help                                    => http://www.valkaari.com
 #       - Mipoll        for the main idea                               => http://mipollstudio.blogspot.fr
@@ -24,13 +25,19 @@
 #       - César Vonc    pour son aide et tout ces plugins c4d open source   => http://cesar.vonc.fr
 #       - xs_yann       pour son aide                                       => http://www.xsyann.com
 #       - valkaari      pour son aide                                       => http://www.valkaari.com
+#       - oli_d         pour son aide                                       => http://frenchcinema4d.fr/member.php?55058-oli_d
 #       - Mipoll        pour l'idée principale                              => http://mipollstudio.blogspot.fr
 #       - Aurety        pour rien mais j'aime le remercier !                => http://www.lev-communication.fr
 
 import  c4d,os,types
+
+import urllib
+import urllib2
 from c4d import gui, plugins, Vector, Matrix, bitmaps
 
+
 MODULE_ID                   =   1035532
+VERSION                     =   1.1
 
 PIVOT_MASTER_PLUGIN_NAME    =   1000
 PIVOT_MASTER_ABOUT          =   1001
@@ -260,7 +267,7 @@ class pictureManagment(c4d.gui.GeUserArea):
         self.path = os.path.join(dir, "res")
 
         self.bmp = c4d.bitmaps.BaseBitmap()
-        self.bmp.InitWith(self.path + "\PivotMaster.jpg")  
+        self.bmp.InitWith(os.path.join(self.path,"PivotMaster.jpg"))  
         
         self.position = ([  [8   ,32  ,28  ,48  ,1],
                             [61  ,43  ,78  ,58  ,2],
@@ -336,25 +343,23 @@ class pictureManagment(c4d.gui.GeUserArea):
                     #We check if we got much more one item select
                     if len(self.obj) >= 2 :
                         gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_MULTI))
+                    elif len(self.obj) == 0 :
+                        gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_OBJ))
                     else :
                         self.obj = self.obj[0]
-                        #We check if we got a slection
-                        if self.obj == None:
-                            gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_OBJ))
+                           #We check if is not a null
+                        if not self.obj.CheckType(c4d.Opolygon):
+                            gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_NULL))
                         else :
-                            #We check if is not a null
-                            if self.obj.GetTypeName() != "Polygon":
-                                gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_NULL))
-                            else :
-                                    self.doc.StartUndo()
-                                    self.doc.AddUndo(c4d.UNDOTYPE_CHANGE, self.obj)
+                                self.doc.StartUndo()
+                                self.doc.AddUndo(c4d.UNDOTYPE_CHANGE, self.obj)
 
-                                    objet = pivotTool(self.obj)
-                                    objet.updateAxis(i[4])
+                                objet = pivotTool(self.obj)
+                                objet.updateAxis(i[4])
 
-                                    self.obj.Message(c4d.MSG_UPDATE)
-                                    self.doc.EndUndo()
-                                    c4d.EventAdd()
+                                self.obj.Message(c4d.MSG_UPDATE)
+                                self.doc.EndUndo()
+                                c4d.EventAdd()
                             
         
     def InputEvent(self, msg):
@@ -395,9 +400,11 @@ class myUI(c4d.gui.GeDialog):
         return True
 
 
+
+
 class lunchUI(c4d.plugins.CommandData):
     dialog = None
-    
+
     def Execute(self, doc):
         if self.dialog is None:
            self.dialog = myUI(doc)

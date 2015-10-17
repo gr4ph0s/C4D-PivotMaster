@@ -254,7 +254,6 @@ class pivotTool(mesh):
 
 
 class pictureManagment(c4d.gui.GeUserArea):
-
     def __init__(self,doc):
         self.doc        = doc
         self.obj        = None
@@ -265,9 +264,11 @@ class pictureManagment(c4d.gui.GeUserArea):
   
         dir, file = os.path.split(__file__)
         self.path = os.path.join(dir, "res")
+		
 
         self.bmp = c4d.bitmaps.BaseBitmap()
         self.bmp.InitWith(os.path.join(self.path,"PivotMaster.jpg"))  
+		
         
         self.position = ([  [8   ,32  ,28  ,48  ,1],
                             [61  ,43  ,78  ,58  ,2],
@@ -300,15 +301,18 @@ class pictureManagment(c4d.gui.GeUserArea):
                             [184 ,142 ,202 ,159 ,27]
                             ])
 
+    def GetMinSize(self):
+        return self.bmp.GetSize()
+		
     def DrawMsg(self, x1, y1, x2, y2, msg):
         self.DrawSetPen(c4d.COLOR_BG)
         self.DrawRectangle(0, 0, 208, 200)
         self.SetClippingRegion(0, 0, 208, 200)
         self.DrawBitmap(self.bmp, 5, 5, 200, 190, 0, 0, 200, 190, c4d.BMP_NORMAL | c4d.BMP_ALLOWALPHA)
 
-        self.DrawBorder(c4d.BORDER_ROUND, 5, 5, 203, 195)
+        #self.DrawBorder(c4d.BORDER_ROUND, 5, 5, 203, 195)
 
-
+		 
     def Message(self, msg, result): 
         if msg.GetId() == c4d.BFM_GETCURSORINFO: 
             if not self.__hover: #hover the total image
@@ -387,19 +391,22 @@ class pictureManagment(c4d.gui.GeUserArea):
         self.SendParentMessage(action)
 
         return True
-
+		
+		
+		
 class myUI(c4d.gui.GeDialog):
     def __init__(self,doc) :        
         self.doc = doc
         self.pictureManagment = pictureManagment(self.doc)  
 
+		
     def CreateLayout(self):
-        self.AddUserArea(2000, c4d.BFH_SCALEFIT | c4d.BFV_SCALEFIT) 
+        self.AddUserArea(2000, c4d.BFH_CENTER) 
         self.AttachUserArea(self.pictureManagment, 2000)
         self.AddStaticText(1101, c4d.BFH_CENTER, 0, 20, c4d.plugins.GeLoadString(PIVOT_MASTER_ABOUT))
         return True
-
-
+	
+		
 
 
 class lunchUI(c4d.plugins.CommandData):

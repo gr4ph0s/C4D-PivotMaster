@@ -254,8 +254,8 @@ class pivotTool(mesh):
 
 
 class pictureManagment(c4d.gui.GeUserArea):
-    def __init__(self,doc):
-        self.doc        = doc
+    def __init__(self):
+        self.doc        = None
         self.obj        = None
 
         self._DOING     = False
@@ -306,12 +306,9 @@ class pictureManagment(c4d.gui.GeUserArea):
 		
     def DrawMsg(self, x1, y1, x2, y2, msg):
         self.DrawSetPen(c4d.COLOR_BG)
-        self.DrawRectangle(0, 0, 208, 200)
-        self.SetClippingRegion(0, 0, 208, 200)
-        self.DrawBitmap(self.bmp, 5, 5, 200, 190, 0, 0, 200, 190, c4d.BMP_NORMAL | c4d.BMP_ALLOWALPHA)
-
-        #self.DrawBorder(c4d.BORDER_ROUND, 5, 5, 203, 195)
-
+        self.DrawRectangle(0, 0, 200, 190)
+        self.SetClippingRegion(0, 0, 200, 190)
+        self.DrawBitmap(self.bmp, 0, 0, 200, 190, 0, 0, 200, 190, c4d.BMP_NORMAL | c4d.BMP_ALLOWALPHA)
 		 
     def Message(self, msg, result): 
         if msg.GetId() == c4d.BFM_GETCURSORINFO: 
@@ -339,6 +336,7 @@ class pictureManagment(c4d.gui.GeUserArea):
             self.Redraw() 
 
     def getButton(self,x,y):
+    	self.doc = c4d.documents.GetActiveDocument()
         if self._DOING == True:
             for i in self.position:
                 if x > i[0] and x < i[2] and y > i[1] and y < i[3]:
@@ -395,9 +393,8 @@ class pictureManagment(c4d.gui.GeUserArea):
 		
 		
 class myUI(c4d.gui.GeDialog):
-    def __init__(self,doc) :        
-        self.doc = doc
-        self.pictureManagment = pictureManagment(self.doc)  
+    def __init__(self) :
+        self.pictureManagment = pictureManagment()  
 
 		
     def CreateLayout(self):
@@ -414,12 +411,12 @@ class lunchUI(c4d.plugins.CommandData):
 
     def Execute(self, doc):
         if self.dialog is None:
-           self.dialog = myUI(doc)
-        return self.dialog.Open(dlgtype=c4d.DLG_TYPE_ASYNC, pluginid=MODULE_ID, defaulth=280, defaultw=220)
+           self.dialog = myUI()
+        return self.dialog.Open(dlgtype=c4d.DLG_TYPE_ASYNC, pluginid=MODULE_ID, defaulth=280, defaultw=190)
 
     def RestoreLayout(self, sec_ref):
         if self.dialog is None:
-           self.dialog = myUI(doc)
+           self.dialog = myUI()
         return self.dialog.Restore(pluginid=MODULE_ID, secret=sec_ref)
 
 if __name__ == "__main__":
@@ -428,5 +425,5 @@ if __name__ == "__main__":
      fn = os.path.join(dir, "res", "PivotMaster.tif")
      bmp.InitWith(fn)
      c4d.plugins.RegisterCommandPlugin(id=MODULE_ID, str=c4d.plugins.GeLoadString(PIVOT_MASTER_PLUGIN_NAME),
-                                      help="Click on the circle",info=0,
-                                        dat=lunchUI(), icon=bmp)
+                                       help="Click on the circle",info=0,
+                                       dat=lunchUI(), icon=bmp)

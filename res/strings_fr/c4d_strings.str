@@ -1,8 +1,8 @@
-STRINGTABLE 
+STRINGTABLE
 {
 	PIVOT_MASTER_PLUGIN_NAME "Pivot Master";
 
-	PIVOT_MASTER_ABOUT			"v1.3 - Gr4ph0s - http://graphos.fr";
+	PIVOT_MASTER_ABOUT			"v1.4 - Gr4ph0s - http://graphos.fr";
 	PIVOT_MASTER_ALERT_OBJ      "Vous devez s\u00e9lectionner un objet";
 	PIVOT_MASTER_ALERT_NULL		"Impossible de s\u00e9lectionner un objet nul";
 	PIVOT_MASTER_ALERT_MULTI	"Impossible de s\u00e9lectionner plusieurs objets";

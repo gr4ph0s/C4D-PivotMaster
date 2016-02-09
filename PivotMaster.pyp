@@ -6,7 +6,7 @@
 # this stuff is worth it, you can buy me a beer in return Poul-Henning Kamp
 # ----------------------------------------------------------------------------
 # BIG THANKS TO :
-#       - César Vonc    for all is open source python plugin for c4d    => http://cesar.vonc.fr
+#       - CÃ©sar Vonc    for all is open source python plugin for c4d    => http://cesar.vonc.fr
 #       - oli_d         for his help                                    => http://frenchcinema4d.fr/member.php?55058-oli_d
 #       - xs_yann       for his help                                    => http://www.xsyann.com
 #       - valkaari      for his help                                    => http://www.valkaari.com
@@ -15,18 +15,18 @@
 #
 #   FRENCH VERSION :
 # ----------------------------------------------------------------------------
-# "LICENCE BEERWARE" (Révision 42):
-# Adam Maxime Aka Gr4ph0s a créé ce fichier. Tant que vous conservez cet avertissement,
+# "LICENCE BEERWARE" (RÃ©vision 42):
+# Adam Maxime Aka Gr4ph0s a crÃ©Ã© ce fichier. Tant que vous conservez cet avertissement,
 # vous pouvez faire ce que vous voulez de ce truc. Si on se rencontre un jour et
-# que vous pensez que ce truc vaut le coup, vous pouvez me payer une bière en
+# que vous pensez que ce truc vaut le coup, vous pouvez me payer une biÃ¨re en
 # retour. Poul-Henning Kamp
 # ----------------------------------------------------------------------------
-# Un grand merci à :
-#       - César Vonc    pour son aide et tout ces plugins c4d open source   => http://cesar.vonc.fr
+# Un grand merci Ã  :
+#       - CÃ©sar Vonc    pour son aide et tout ces plugins c4d open source   => http://cesar.vonc.fr
 #       - xs_yann       pour son aide                                       => http://www.xsyann.com
 #       - valkaari      pour son aide                                       => http://www.valkaari.com
 #       - oli_d         pour son aide                                       => http://frenchcinema4d.fr/member.php?55058-oli_d
-#       - Mipoll        pour l'idée principale                              => http://mipollstudio.blogspot.fr
+#       - Mipoll        pour l'idÃ©e principale                              => http://mipollstudio.blogspot.fr
 #       - Aurety        pour rien mais j'aime le remercier !                => http://www.lev-communication.fr
 
 import  c4d,os,types
@@ -37,7 +37,7 @@ from c4d import gui, plugins, Vector, Matrix, bitmaps
 
 
 MODULE_ID                   =   1035532
-VERSION                     =   1.1
+VERSION                     =   1.4
 
 PIVOT_MASTER_PLUGIN_NAME    =   1000
 PIVOT_MASTER_ABOUT          =   1001
@@ -45,28 +45,28 @@ PIVOT_MASTER_ALERT_OBJ      =   1002
 PIVOT_MASTER_ALERT_NULL     =   1003
 PIVOT_MASTER_ALERT_MULTI    =   1004
 
+
 class mesh():
-    
     def __init__(self,obj):
         self._MESH                = obj
-    
+
         self._RADIUS              = self._MESH.GetRad()
         self._ALL_POINTS          = self._MESH.GetAllPoints()
         self._NOMBRE_POINT        = self._MESH.GetPointCount()
-        self._CURRENT_AXIS        = self._MESH.GetMg()
+        self._CURRENT_AXIS        = self._MESH.GetRelMl()
         self._BOUDING_BOX_CENTER  = self._MESH.GetMp() + self._MESH.GetAbsPos()
-        
+
     def newMatrix(self):
         return Matrix(self._BOUDING_BOX_CENTER, Vector(1, 0, 0), Vector(0, 1, 0), Vector(0, 0, 1))
-    
+
 
 class pivotTool(mesh):
 
     def __init__(self,obj):
         mesh.__init__(self,obj)
         self._Matrix = self.newMatrix()
-       
-        
+
+
         self.__FRONT_TOP_LEFT       = 1
         self.__FRONT_TOP_CENTER     = 2
         self.__FRONT_TOP_RIGHT      = 3
@@ -98,10 +98,9 @@ class pivotTool(mesh):
         self.__BACK_BOT_LEFT        = 25
         self.__BACK_BOT_CENTER      = 26
         self.__BACK_BOT_RIGHT       = 27
-        
-    
+
+
     def updateAxis(self, where):
-        
         vbuffer   = Vector(0, 0, 0)
         nbpts     = self._MESH.GetPointCount()
         points    = self._MESH.GetAllPoints()
@@ -110,142 +109,144 @@ class pivotTool(mesh):
         if where == self.__FRONT_TOP_LEFT :
             vbuffer = Vector (-self._RADIUS.x, self._RADIUS.y , -self._RADIUS.z)
             self._Matrix.off += vbuffer
-        
+
         #FRONT_TOP_CENTER
         elif where == self.__FRONT_TOP_CENTER :
             vbuffer = Vector ( 0, self._RADIUS.y , -self._RADIUS.z )
-            self._Matrix.off += vbuffer 
-                    
+            self._Matrix.off += vbuffer
+
          #FRONT_TOP_RIGHT
         elif where == self.__FRONT_TOP_RIGHT :
             vbuffer = Vector (self._RADIUS.x, self._RADIUS.y , -self._RADIUS.z)
-            self._Matrix.off += vbuffer        
-               
+            self._Matrix.off += vbuffer
+
         #FRONT_CENTER_LEFT
         elif where == self.__FRONT_CENTER_LEFT :
             vbuffer = Vector (-self._RADIUS.x, 0 , -self._RADIUS.z)
             self._Matrix.off += vbuffer
-        
+
         #FRONT_CENTER_CENTER
         elif where == self.__FRONT_CENTER_CENTER :
             vbuffer = Vector ( 0, 0 , -self._RADIUS.z )
             self._Matrix.off += vbuffer
-                    
+
          #FRONT_CENTER_RIGHT
         elif where == self.__FRONT_CENTER_RIGHT :
             vbuffer = Vector (self._RADIUS.x, 0 , -self._RADIUS.z)
-            self._Matrix.off += vbuffer      
-            
+            self._Matrix.off += vbuffer
+
         #FRONT_BOT_LEFT
         elif where == self.__FRONT_BOT_LEFT :
             vbuffer = Vector (-self._RADIUS.x, -self._RADIUS.y , -self._RADIUS.z)
             self._Matrix.off += vbuffer
-        
+
         #FRONT_BOT_CENTER
         elif where == self.__FRONT_BOT_CENTER :
             vbuffer = Vector ( 0, -self._RADIUS.y , -self._RADIUS.z )
-            self._Matrix.off += vbuffer 
-                    
+            self._Matrix.off += vbuffer
+
         #FRONT_BOT_RIGHT
         elif where == self.__FRONT_BOT_RIGHT :
             vbuffer = Vector (self._RADIUS.x, -self._RADIUS.y , -self._RADIUS.z)
-            self._Matrix.off += vbuffer     
-       
+            self._Matrix.off += vbuffer
+
         #MID_TOP_LEFT
         elif where == self.__MID_TOP_LEFT :
             vbuffer = Vector (-self._RADIUS.x, self._RADIUS.y , 0)
             self._Matrix.off += vbuffer
-        
+
         #MID_TOP_CENTER
         elif where == self.__MID_TOP_CENTER :
             vbuffer = Vector ( 0, self._RADIUS.y , 0 )
-            self._Matrix.off += vbuffer 
-                    
+            self._Matrix.off += vbuffer
+
          #MID_TOP_RIGHT
         elif where == self.__MID_TOP_RIGHT :
             vbuffer = Vector (self._RADIUS.x, self._RADIUS.y , 0)
-            self._Matrix.off += vbuffer        
-               
+            self._Matrix.off += vbuffer
+
         #MID_CENTER_LEFT
         elif where == self.__MID_CENTER_LEFT :
             vbuffer = Vector (-self._RADIUS.x, 0 , 0)
             self._Matrix.off += vbuffer
-        
+
         #MID_CENTER_CENTER
         elif where == self.__MID_CENTER_CENTER :
             vbuffer = Vector ( 0, 0 , 0 )
             self._Matrix.off += vbuffer
-                    
+
          #MID_CENTER_RIGHT
         elif where == self.__MID_CENTER_RIGHT :
             vbuffer = Vector (self._RADIUS.x, 0 , 0)
-            self._Matrix.off += vbuffer      
-            
+            self._Matrix.off += vbuffer
+
         #MID_BOT_LEFT
         elif where == self.__MID_BOT_LEFT :
             vbuffer = Vector (-self._RADIUS.x, -self._RADIUS.y , 0)
             self._Matrix.off += vbuffer
-        
+
         #MID_BOT_CENTER
         elif where == self.__MID_BOT_CENTER :
             vbuffer = Vector ( 0, -self._RADIUS.y , 0 )
-            self._Matrix.off += vbuffer 
-                    
+            self._Matrix.off += vbuffer
+
         #MID_BOT_RIGHT
         elif where == self.__MID_BOT_RIGHT :
             vbuffer = Vector (self._RADIUS.x, -self._RADIUS.y , 0)
-            self._Matrix.off += vbuffer 
-        
+            self._Matrix.off += vbuffer
+
         #BACK_TOP_LEFT
         elif where == self.__BACK_TOP_LEFT :
             vbuffer = Vector (-self._RADIUS.x, self._RADIUS.y , self._RADIUS.z)
             self._Matrix.off += vbuffer
-        
+
         #BACK_TOP_CENTER
         elif where == self.__BACK_TOP_CENTER :
             vbuffer = Vector ( 0, self._RADIUS.y , self._RADIUS.z )
-            self._Matrix.off += vbuffer 
-                    
+            self._Matrix.off += vbuffer
+
          #BACK_TOP_RIGHT
         elif where == self.__BACK_TOP_RIGHT :
             vbuffer = Vector (self._RADIUS.x, self._RADIUS.y , self._RADIUS.z)
-            self._Matrix.off += vbuffer        
-               
+            self._Matrix.off += vbuffer
+
         #BACK_CENTER_LEFT
         elif where == self.__BACK_CENTER_LEFT :
             vbuffer = Vector (-self._RADIUS.x, 0 , self._RADIUS.z)
             self._Matrix.off += vbuffer
-        
+
         #BACK_CENTER_CENTER
         elif where == self.__BACK_CENTER_CENTER :
             vbuffer = Vector ( 0, 0 , self._RADIUS.z )
             self._Matrix.off += vbuffer
-                    
+
          #BACK_CENTER_RIGHT
         elif where == self.__BACK_CENTER_RIGHT :
             vbuffer = Vector (self._RADIUS.x, 0 , self._RADIUS.z)
-            self._Matrix.off += vbuffer      
-            
+            self._Matrix.off += vbuffer
+
         #BACK_BOT_LEFT
         elif where == self.__BACK_BOT_LEFT :
             vbuffer = Vector (-self._RADIUS.x, -self._RADIUS.y , self._RADIUS.z)
             self._Matrix.off += vbuffer
-        
+
         #BACK_BOT_CENTER
         elif where == self.__BACK_BOT_CENTER :
             vbuffer = Vector ( 0, -self._RADIUS.y , self._RADIUS.z )
-            self._Matrix.off += vbuffer 
-                    
+            self._Matrix.off += vbuffer
+
         #BACK_BOT_RIGHT
         elif where == self.__BACK_BOT_RIGHT :
             vbuffer = Vector (self._RADIUS.x, -self._RADIUS.y , self._RADIUS.z)
-            self._Matrix.off += vbuffer 
-         
-        
+            self._Matrix.off += vbuffer
+
+
         newMatrix = ~self._Matrix * self._CURRENT_AXIS
+
+
         for i in range(nbpts) :
-            points[i] = newMatrix.Mul(points[i])             
-        
+            points[i] = newMatrix.Mul(points[i])
+
         self._MESH.SetAllPoints(points)
         self._MESH.SetMl(self._Matrix)
 
@@ -261,16 +262,16 @@ class pictureManagment(c4d.gui.GeUserArea):
         self._DOING     = False
         self.__hover    = False
         self._COUNT     = 0
-  
+
         dir, file = os.path.split(__file__)
         self.path = os.path.join(dir, "res")
-		
+
 
         self.bmp = c4d.bitmaps.BaseBitmap()
-        self.bmp.InitWith(os.path.join(self.path,"PivotMaster.jpg"))  
-		
-        
-        self.position = ([  [8   ,32  ,28  ,48  ,1],
+        self.bmp.InitWith(os.path.join(self.path,"PivotMaster.jpg"))
+
+
+        self.position = ([  [0   ,32  ,28  ,48  ,1],
                             [61  ,43  ,78  ,58  ,2],
                             [116 ,52  ,132 ,68  ,3],
                             [8   ,94  ,25  ,109 ,4],
@@ -303,43 +304,44 @@ class pictureManagment(c4d.gui.GeUserArea):
 
     def GetMinSize(self):
         return self.bmp.GetSize()
-		
+
     def DrawMsg(self, x1, y1, x2, y2, msg):
         self.DrawSetPen(c4d.COLOR_BG)
         self.DrawRectangle(0, 0, 200, 190)
         self.SetClippingRegion(0, 0, 200, 190)
         self.DrawBitmap(self.bmp, 0, 0, 200, 190, 0, 0, 200, 190, c4d.BMP_NORMAL | c4d.BMP_ALLOWALPHA)
-		 
-    def Message(self, msg, result): 
-        if msg.GetId() == c4d.BFM_GETCURSORINFO: 
+
+    def Message(self, msg, result):
+        if msg.GetId() == c4d.BFM_GETCURSORINFO:
             if not self.__hover: #hover the total image
-                self.__hover = True 
-                self.Redraw() 
-                self.SetTimer(100) 
-        return super(pictureManagment, self).Message(msg, result) 
+                self.__hover = True
+                self.Redraw()
+                self.SetTimer(100)
+        return super(pictureManagment, self).Message(msg, result)
 
     def Timer(self, msg):
-        if self._COUNT == 5:
+        if self._COUNT == 2:
             self._DOING = True
             self._COUNT = 0
 
         self._COUNT += 1
-        base = self.Local2Global() 
-        bc = c4d.BaseContainer() 
+        base = self.Local2Global()
+        bc = c4d.BaseContainer()
         res = self.GetInputState(c4d.BFM_INPUT_MOUSE, c4d.BFM_INPUT_MOUSELEFT, bc)
 
-        x = bc.GetLong(c4d.BFM_INPUT_X) - base['x'] 
-        y = bc.GetLong(c4d.BFM_INPUT_Y) - base['y'] 
+        x = bc.GetLong(c4d.BFM_INPUT_X) - base['x']
+        y = bc.GetLong(c4d.BFM_INPUT_Y) - base['y']
         if x > self.GetWidth() or x < 0 or y > self.GetHeight() or y < 0:
-            self.__hover = False 
-            self.SetTimer(0) 
-            self.Redraw() 
+            self.__hover = False
+            self.SetTimer(0)
+            self.Redraw()
 
     def getButton(self,x,y):
     	self.doc = c4d.documents.GetActiveDocument()
-        if self._DOING == True:
+        if self._DOING == True :
             for i in self.position:
                 if x > i[0] and x < i[2] and y > i[1] and y < i[3]:
+                    print 'ok'
                     self._DOING = False
                     self.obj = self.doc.GetActiveObjects(0)
                     #We check if we got much more one item select
@@ -362,8 +364,8 @@ class pictureManagment(c4d.gui.GeUserArea):
                                 self.obj.Message(c4d.MSG_UPDATE)
                                 self.doc.EndUndo()
                                 c4d.EventAdd()
-                            
-        
+
+
     def InputEvent(self, msg):
 
         action = c4d.BaseContainer(c4d.BFM_ACTION)
@@ -374,6 +376,8 @@ class pictureManagment(c4d.gui.GeUserArea):
 
             if msg[c4d.BFM_INPUT_DEVICE] == c4d.BFM_INPUT_MOUSE:
                 x, y = msg[c4d.BFM_INPUT_X], msg[c4d.BFM_INPUT_Y]
+                print x
+                print y
                 g2l  = self.Global2Local()
                 x += g2l['x']
                 y += g2l['y']
@@ -389,21 +393,21 @@ class pictureManagment(c4d.gui.GeUserArea):
         self.SendParentMessage(action)
 
         return True
-		
-		
-		
+
+
+
 class myUI(c4d.gui.GeDialog):
     def __init__(self) :
-        self.pictureManagment = pictureManagment()  
+        self.pictureManagment = pictureManagment()
 
-		
+
     def CreateLayout(self):
-        self.AddUserArea(2000, c4d.BFH_CENTER) 
+        self.AddUserArea(2000, c4d.BFH_CENTER)
         self.AttachUserArea(self.pictureManagment, 2000)
         self.AddStaticText(1101, c4d.BFH_CENTER, 0, 20, c4d.plugins.GeLoadString(PIVOT_MASTER_ABOUT))
         return True
-	
-		
+
+
 
 
 class lunchUI(c4d.plugins.CommandData):

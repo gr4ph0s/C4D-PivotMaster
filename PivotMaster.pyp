@@ -37,7 +37,7 @@ from c4d import gui, plugins, Vector, Matrix, bitmaps
 
 
 MODULE_ID                   =   1035532
-VERSION                     =   1.4
+VERSION                     =   1.5
 
 PIVOT_MASTER_PLUGIN_NAME    =   1000
 PIVOT_MASTER_ABOUT          =   1001
@@ -341,29 +341,27 @@ class pictureManagment(c4d.gui.GeUserArea):
         if self._DOING == True :
             for i in self.position:
                 if x > i[0] and x < i[2] and y > i[1] and y < i[3]:
-                    print 'ok'
                     self._DOING = False
                     self.obj = self.doc.GetActiveObjects(0)
-                    #We check if we got much more one item select
-                    if len(self.obj) >= 2 :
-                        gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_MULTI))
-                    elif len(self.obj) == 0 :
+                    if len(self.obj) == 0 :
                         gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_OBJ))
                     else :
-                        self.obj = self.obj[0]
-                           #We check if is not a null
-                        if not self.obj.CheckType(c4d.Opolygon):
-                            gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_NULL))
-                        else :
+                        for obj in self.obj:
+                            if not obj.CheckType(c4d.Opolygon):
+                                gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_NULL))
+                                return False
+                            else :
                                 self.doc.StartUndo()
-                                self.doc.AddUndo(c4d.UNDOTYPE_CHANGE, self.obj)
+                                self.doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
 
-                                objet = pivotTool(self.obj)
+                                objet = pivotTool(obj)
                                 objet.updateAxis(i[4])
 
-                                self.obj.Message(c4d.MSG_UPDATE)
+                                obj.Message(c4d.MSG_UPDATE)
                                 self.doc.EndUndo()
                                 c4d.EventAdd()
+                            
+                        gui.MessageDialog('Done')
 
 
     def InputEvent(self, msg):
@@ -376,8 +374,6 @@ class pictureManagment(c4d.gui.GeUserArea):
 
             if msg[c4d.BFM_INPUT_DEVICE] == c4d.BFM_INPUT_MOUSE:
                 x, y = msg[c4d.BFM_INPUT_X], msg[c4d.BFM_INPUT_Y]
-                print x
-                print y
                 g2l  = self.Global2Local()
                 x += g2l['x']
                 y += g2l['y']
@@ -406,7 +402,6 @@ class myUI(c4d.gui.GeDialog):
         self.AttachUserArea(self.pictureManagment, 2000)
         self.AddStaticText(1101, c4d.BFH_CENTER, 0, 20, c4d.plugins.GeLoadString(PIVOT_MASTER_ABOUT))
         return True
-
 
 
 

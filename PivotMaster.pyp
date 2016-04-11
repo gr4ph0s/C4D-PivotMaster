@@ -37,13 +37,16 @@ from c4d import gui, plugins, Vector, Matrix, bitmaps
 
 
 MODULE_ID                   =   1035532
-VERSION                     =   1.5
+VERSION                     =   1.6
 
 PIVOT_MASTER_PLUGIN_NAME    =   1000
 PIVOT_MASTER_ABOUT          =   1001
 PIVOT_MASTER_ALERT_OBJ      =   1002
 PIVOT_MASTER_ALERT_NULL     =   1003
-PIVOT_MASTER_ALERT_MULTI    =   1004
+PIVOT_MASTER_GROUP_PROGRESS =   1004
+PIVOT_MASTER_TEXT_PROGRESS  =   1005
+PIVOT_MASTER_PROGRESS       =   1006
+
 
 
 class mesh():
@@ -241,7 +244,7 @@ class pivotTool(mesh):
             self._Matrix.off += vbuffer
 
 
-        newMatrix = ~self._Matrix * self._CURRENT_AXIS
+        newMatrix =~ self._Matrix * self._CURRENT_AXIS
 
 
         for i in range(nbpts) :
@@ -252,10 +255,10 @@ class pivotTool(mesh):
 
 
 
-
-
 class pictureManagment(c4d.gui.GeUserArea):
-    def __init__(self):
+    def __init__(self,UI):
+        self.UI         = UI
+        self.progress   = 0
         self.doc        = None
         self.obj        = None
 
@@ -346,11 +349,15 @@ class pictureManagment(c4d.gui.GeUserArea):
                     if len(self.obj) == 0 :
                         gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_OBJ))
                     else :
+                        self.UI.initProgressBar()
+                        compteur = 0
                         for obj in self.obj:
+                            compteur += 1
                             if not obj.CheckType(c4d.Opolygon):
                                 gui.MessageDialog(c4d.plugins.GeLoadString(PIVOT_MASTER_ALERT_NULL))
                                 return False
                             else :
+                                self.UI.setProgressBar(compteur,len(self.obj))
                                 self.doc.StartUndo()
                                 self.doc.AddUndo(c4d.UNDOTYPE_CHANGE, obj)
 
@@ -360,8 +367,8 @@ class pictureManagment(c4d.gui.GeUserArea):
                                 obj.Message(c4d.MSG_UPDATE)
                                 self.doc.EndUndo()
                                 c4d.EventAdd()
-                            
-                        gui.MessageDialog('Done')
+
+                        self.UI.closeProgressBar()
 
 
     def InputEvent(self, msg):
@@ -393,20 +400,58 @@ class pictureManagment(c4d.gui.GeUserArea):
 
 
 class myUI(c4d.gui.GeDialog):
+
     def __init__(self) :
-        self.pictureManagment = pictureManagment()
+        self.pictureManagment = pictureManagment(self)
+        self.progress = 0
 
-
-    def CreateLayout(self):
-        self.AddUserArea(2000, c4d.BFH_CENTER)
-        self.AttachUserArea(self.pictureManagment, 2000)
-        self.AddStaticText(1101, c4d.BFH_CENTER, 0, 20, c4d.plugins.GeLoadString(PIVOT_MASTER_ABOUT))
+    def initProgressBar(self, Message = c4d.plugins.GeLoadString(PIVOT_MASTER_TEXT_PROGRESS)):
+        self.progress = 0
+        progressMsg = c4d.BaseContainer(c4d.BFM_SETSTATUSBAR)
+        progressMsg.SetBool(c4d.BFM_STATUSBAR_PROGRESSON, True)
+        progressMsg[c4d.BFM_STATUSBAR_NETTXT] = Message
+        progressMsg[c4d.BFM_STATUSBAR_PROGRESS] = 0.0
+        self.SendMessage(PIVOT_MASTER_PROGRESS, progressMsg)
+        self.LayoutChanged(PIVOT_MASTER_GROUP_PROGRESS)
         return True
 
+    def setProgressBar(self,currentValue,MaxValue):
+        if MaxValue < currentValue : return False
+        self.progress = float(currentValue) / float(MaxValue)
+        progressMsg = c4d.BaseContainer(c4d.BFM_SETSTATUSBAR)
+        progressMsg[c4d.BFM_STATUSBAR_PROGRESS] = self.progress
+        self.SendMessage(PIVOT_MASTER_PROGRESS, progressMsg)
+        self.LayoutChanged(PIVOT_MASTER_GROUP_PROGRESS)
+        return True
+
+    def closeProgressBar(self):
+        progressMsg = c4d.BaseContainer(c4d.BFM_SETSTATUSBAR)
+        progressMsg.SetBool(c4d.BFM_STATUSBAR_PROGRESSON, False)
+        self.SendMessage(PIVOT_MASTER_PROGRESS, progressMsg)
+        self.LayoutChanged(PIVOT_MASTER_GROUP_PROGRESS)
+        return True
+
+    def CreateLayout(self):
+        self.SetTitle(c4d.plugins.GeLoadString(PIVOT_MASTER_PLUGIN_NAME) + " V" + str(VERSION))
+        self.AddUserArea(2000, c4d.BFH_CENTER)
+        self.AttachUserArea(self.pictureManagment, 2000)
+
+        self.GroupBegin(PIVOT_MASTER_GROUP_PROGRESS, c4d.BFH_SCALEFIT|c4d.BFV_TOP, 1, 1)
+        self.GroupBorderNoTitle(c4d.BORDER_ACTIVE_1)
+        self.AddCustomGui(PIVOT_MASTER_PROGRESS, c4d.CUSTOMGUI_PROGRESSBAR, "", c4d.BFH_SCALEFIT|c4d.BFV_TOP, 0, 0)
+        self.GroupEnd()
+
+        self.AddStaticText(1101, c4d.BFH_CENTER, 0, 20, c4d.plugins.GeLoadString(PIVOT_MASTER_ABOUT))
+
+        return True
 
 
 class lunchUI(c4d.plugins.CommandData):
     dialog = None
+
+    def Message(self, type, data):
+        return True
+       #self.dialog.initProgressBar()
 
     def Execute(self, doc):
         if self.dialog is None:

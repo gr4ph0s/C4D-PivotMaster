@@ -2,8 +2,8 @@ STRINGTABLE
 {
 	PIVOT_MASTER_PLUGIN_NAME "Pivot Master";
 
-	PIVOT_MASTER_ABOUT			"v1.4 - Gr4ph0s - http://graphos.fr";
+	PIVOT_MASTER_ABOUT			"v1.6 - Gr4ph0s - http://graphos.fr";
 	PIVOT_MASTER_ALERT_OBJ		"You must select one object";
 	PIVOT_MASTER_ALERT_NULL		"Can't select a null object";
-	PIVOT_MASTER_ALERT_MULTI	"Can't select multiples objects";
+	PIVOT_MASTER_TEXT_PROGRESS	"Done";
 }
